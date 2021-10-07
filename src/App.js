@@ -3,11 +3,11 @@ import * as PIXI from 'pixi.js'
 import { Viewport } from 'pixi-viewport'
 import Complex from './ComplexLib'
 
-const CHECK_PRESCION = 50  //точность самого Мальденброта
-const INFINITY_EDGE = 64 // точность улетания в бесконечность
-const CHECK_VALUES = 3 // площа охвата
+const CHECK_PRESCION = 1  //точность самого Мальденброта
+const INFINITY_EDGE = 256 // точность улетания в бесконечность
+const CHECK_VALUES = 2 // площа охвата
 const MOVEFROMCENTER = 0
-const CHECK_STEP = .01 // увеличить плотность постоения
+const CHECK_STEP = 0.005 // увеличить плотность постоения
 const RENDER_SCALE = 400
 
 export default () => {
@@ -15,7 +15,7 @@ export default () => {
         const app = new PIXI.Application({
             width: window.innerWidth,
             height: window.innerHeight,
-            backgroundColor: 0x111111,
+            backgroundColor: 0xffffff,
             transparent: false,
             resolution: window.devicePixelRatio || 1,
             antialias: true
@@ -73,8 +73,9 @@ export default () => {
         console.time('1')
         for (let j = -CHECK_VALUES + MOVEFROMCENTER; j < CHECK_VALUES + MOVEFROMCENTER; j+=CHECK_STEP){
             for (let k = -CHECK_VALUES + MOVEFROMCENTER; k < CHECK_VALUES + MOVEFROMCENTER; k+=CHECK_STEP){
-
-                drawTail(j * RENDER_SCALE, k * RENDER_SCALE, checkComplex(new Complex(j,k)))
+                const color = checkComplex(new Complex(j,k))
+                if (color) 
+                    drawTail(j * RENDER_SCALE, k * RENDER_SCALE, color)
             }
         }
         console.timeEnd('1')
@@ -91,13 +92,13 @@ const checkComplex = c => {
     let old_c = c
     let new_c = new Complex(0, 0)
     let i = 0
-    for (i = 0; i < CHECK_PRESCION; i+=.1){
+    for (i = 0; i < CHECK_PRESCION; i+=.01){
         new_c = Complex.add(Complex.mult(new_c, new_c), old_c) 
 
-        if (Math.abs(new_c.im) > INFINITY_EDGE || Math.abs(new_c.im) > INFINITY_EDGE) return [i*20, i*100, i]
+        if (Math.abs(new_c.im) > INFINITY_EDGE || Math.abs(new_c.im) > INFINITY_EDGE) return [255 - i*40, 255 - i*100, 255 - i+10]
     }
 
-    return [0, 214, 0]
+    return [255, 255, 255]
 } 
 
 const rgb2hex = rgb => ((rgb[0] << 16) + (rgb[1] << 8) + rgb[2])
